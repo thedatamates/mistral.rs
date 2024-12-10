@@ -6,31 +6,31 @@ use crate::{best_device, Model};
 /// Configure a text model with the various parameters for loading, running, and other inference behaviors.
 pub struct TextModelBuilder {
     // Loading model
-    pub(crate) model_id: String,
-    pub(crate) token_source: TokenSource,
-    pub(crate) hf_revision: Option<String>,
-    pub(crate) write_uqff: Option<PathBuf>,
-    pub(crate) from_uqff: Option<PathBuf>,
-    pub(crate) chat_template: Option<String>,
-    pub(crate) tokenizer_json: Option<String>,
-    pub(crate) device_mapping: Option<DeviceMapMetadata>,
+    pub model_id: String,
+    pub token_source: TokenSource,
+    pub hf_revision: Option<String>,
+    pub write_uqff: Option<PathBuf>,
+    pub from_uqff: Option<PathBuf>,
+    pub chat_template: Option<String>,
+    pub tokenizer_json: Option<String>,
+    pub device_mapping: Option<DeviceMapMetadata>,
 
     // Model running
-    pub(crate) use_flash_attn: bool,
-    pub(crate) prompt_batchsize: Option<NonZeroUsize>,
-    pub(crate) topology: Option<Topology>,
-    pub(crate) organization: IsqOrganization,
-    pub(crate) loader_type: Option<NormalLoaderType>,
-    pub(crate) dtype: ModelDType,
-    pub(crate) force_cpu: bool,
-    pub(crate) isq: Option<IsqType>,
+    pub use_flash_attn: bool,
+    pub prompt_batchsize: Option<NonZeroUsize>,
+    pub topology: Option<Topology>,
+    pub organization: IsqOrganization,
+    pub loader_type: Option<NormalLoaderType>,
+    pub dtype: ModelDType,
+    pub force_cpu: bool,
+    pub isq: Option<IsqType>,
 
     // Other things
-    pub(crate) paged_attn_cfg: Option<PagedAttentionConfig>,
-    pub(crate) max_num_seqs: usize,
-    pub(crate) no_kv_cache: bool,
-    pub(crate) with_logging: bool,
-    pub(crate) prefix_cache_n: Option<usize>,
+    pub paged_attn_cfg: Option<PagedAttentionConfig>,
+    pub max_num_seqs: usize,
+    pub no_kv_cache: bool,
+    pub with_logging: bool,
+    pub prefix_cache_n: Option<usize>,
 }
 
 /// Builder for PagedAttention metadata.
