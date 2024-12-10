@@ -91,7 +91,7 @@ pub use request::{
 };
 pub use response::*;
 pub use sampler::{
-    CustomLogitsProcessor, DrySamplingParams, SamplingParams, StopTokens, TopLogprob,
+    CustomLogitsProcessor, DrySamplingParams, Sampler, SamplingParams, StopTokens, TopLogprob,
 };
 pub use scheduler::{DefaultSchedulerMethod, SchedulerConfig};
 pub use sequence::Sequence;
