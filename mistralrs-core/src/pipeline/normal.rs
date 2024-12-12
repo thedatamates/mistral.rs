@@ -51,7 +51,7 @@ use tokio::sync::Mutex;
 use tracing::{info, warn};
 
 pub struct NormalPipeline {
-    pub model: Box<dyn NormalModel + Send + Sync>,
+    model: Box<dyn NormalModel + Send + Sync>,
     tokenizer: Arc<Tokenizer>,
     no_kv_cache: bool,
     chat_template: Arc<ChatTemplate>,
@@ -65,6 +65,23 @@ pub struct NormalPipeline {
     template_filename: Option<PathBuf>,
     generation_config: Option<PathBuf>,
     config: String,
+}
+
+pub struct NormalTrainer {
+    pub model: Box<dyn NormalModel + Send + Sync>,
+    pub tokenizer: Arc<Tokenizer>,
+    pub no_kv_cache: bool,
+    pub chat_template: Arc<ChatTemplate>,
+    pub non_granular_state: Option<NonGranularState>,
+    pub model_id: String,
+    pub metadata: Arc<GeneralMetadata>,
+    pub topology: Option<Topology>,
+    pub silent: bool,
+    pub organization: IsqOrganization,
+    // For full UQFF serialization
+    pub template_filename: Option<PathBuf>,
+    pub generation_config: Option<PathBuf>,
+    pub config: String,
 }
 
 /// A loader for a "normal" (non-quantized) model.
@@ -212,6 +229,272 @@ impl NormalLoaderBuilder {
             revision: RwLock::new(None),
             from_uqff: RwLock::new(None),
         }))
+    }
+}
+
+impl NormalLoader {
+    #[allow(clippy::type_complexity, clippy::too_many_arguments)]
+    pub fn load_model_only_from_hf(
+        &self,
+        revision: Option<String>,
+        token_source: TokenSource,
+        dtype: &dyn TryIntoDType,
+        device: &Device,
+        silent: bool,
+        mapper: DeviceMapMetadata,
+        in_situ_quant: Option<IsqType>,
+        paged_attn_config: Option<PagedAttentionConfig>,
+    ) -> Result<Arc<Mutex<dyn Pipeline + Send + Sync>>> {
+        let paths: anyhow::Result<Box<dyn ModelPaths>> = get_paths!(
+            LocalModelPaths,
+            &token_source,
+            revision.clone(),
+            self,
+            None,
+            None,
+            silent,
+            self.config.from_uqff.is_some()
+        );
+        if let Some(from_uqff) = self.config.from_uqff.clone() {
+            *self.from_uqff.write().unwrap() = Some(get_uqff_paths!(&from_uqff, self, silent));
+        }
+        *self
+            .token_source
+            .write()
+            .expect("Failed to write to token source") = Some(token_source);
+        *self.revision.write().expect("Failed to write to revision") = revision;
+        self.load_model_from_path(
+            &paths?,
+            dtype,
+            device,
+            silent,
+            mapper,
+            in_situ_quant,
+            paged_attn_config,
+        )
+    }
+
+    #[allow(clippy::type_complexity, clippy::too_many_arguments)]
+    pub fn load_model_only_from_path(
+        &self,
+        paths: &Box<dyn ModelPaths>,
+        dtype: &dyn TryIntoDType,
+        device: &Device,
+        silent: bool,
+        mapper: DeviceMapMetadata,
+        in_situ_quant: Option<IsqType>,
+        mut paged_attn_config: Option<PagedAttentionConfig>,
+    ) -> Result<NormalTrainer> {
+        let config = std::fs::read_to_string(paths.get_config_filename())?;
+        // Otherwise, the device mapper will print it
+        if mapper.is_dummy()
+            && (self.config.topology.is_none()
+                || self
+                    .config
+                    .topology
+                    .as_ref()
+                    .is_some_and(|t| t.is_dummy_device_map()))
+        {
+            info!(
+                "Loading model `{}` on {}.",
+                self.get_id(),
+                device.device_pretty_repr()
+            );
+        } else if paged_attn_config.is_some() {
+            warn!("Device mapping or device topology and PagedAttention are incompatible, disabling PagedAttention.");
+            paged_attn_config = None;
+        }
+
+        let mapper = mapper.into_mapper(
+            self.inner.get_total_device_mapping_num_layers(&config)?,
+            device,
+            self.config.topology.as_ref(),
+        )?;
+        let dtype = mapper.get_min_dtype(dtype)?;
+
+        info!(
+            "Model config: {:?}",
+            self.inner
+                .get_config_repr(&config, self.config.use_flash_attn)?
+        );
+
+        let mut loading_isq = in_situ_quant.is_some() || self.config.from_uqff.is_some();
+        if let Some(ref topology) = self.config.topology {
+            loading_isq |= topology
+                .0
+                .iter()
+                .any(|layer| layer.as_ref().is_some_and(|layer| layer.isq.is_some()));
+        }
+
+        let load_device = if !loading_isq {
+            device.clone()
+        } else {
+            Device::Cpu
+        };
+
+        let is_xlora = self.kind.is_adapted_and(|a| a.is_x_lora());
+
+        let attention_mechanism = if paged_attn_config.is_some() {
+            AttentionImplementation::PagedAttention
+        } else {
+            AttentionImplementation::Eager
+        };
+
+        let mut model = match self.kind {
+            ModelKind::Normal => normal_model_loader!(
+                paths,
+                Some(dtype),
+                &load_device,
+                config,
+                self.inner,
+                self.config.use_flash_attn,
+                silent,
+                mapper,
+                loading_isq,
+                self.config.from_uqff.is_some(),
+                device.clone(),
+                attention_mechanism,
+                matches!(self.config.organization, IsqOrganization::MoeExpertsOnly)
+            ),
+            ModelKind::Adapter {
+                adapter: AdapterKind::XLora,
+            } => xlora_model_loader!(
+                paths,
+                Some(dtype),
+                &load_device,
+                config,
+                self.inner,
+                self.config.use_flash_attn,
+                silent,
+                mapper,
+                loading_isq,
+                device.clone()
+            ),
+            ModelKind::Adapter {
+                adapter: AdapterKind::Lora,
+            } => lora_model_loader!(
+                paths,
+                dtype,
+                &load_device,
+                config,
+                self.inner,
+                self.config.use_flash_attn,
+                silent,
+                mapper,
+                loading_isq,
+                device.clone()
+            ),
+            _ => unreachable!(),
+        };
+
+        let tokenizer = get_tokenizer(paths.get_tokenizer_filename(), None)?;
+        let gen_conf: Option<GenerationConfig> = paths
+            .get_gen_conf_filename()
+            .map(|f| serde_json::from_str(&fs::read_to_string(f).unwrap()).unwrap());
+        let chat_template = get_chat_template(
+            paths,
+            &paths
+                .get_chat_template_json()
+                .as_ref()
+                .map(|x| x.to_string_lossy().to_string())
+                .clone(),
+            &self.chat_template,
+            None,
+        );
+
+        if (in_situ_quant.is_some() || self.config.topology.is_some())
+            && self.config.from_uqff.is_none()
+        {
+            model.quantize(
+                in_situ_quant,
+                device.clone(),
+                self.config.topology.as_ref(),
+                silent,
+                self.config.organization,
+                self.config.write_uqff.as_ref(),
+                UqffFullSer {
+                    tokenizer: &tokenizer,
+                    template_filename: paths.get_template_filename(),
+                    generation_config: paths.get_gen_conf_filename(),
+                    config: config.clone(),
+                    processor_filename: &None,
+                    preprocessor_filename: &None,
+                },
+            )?;
+        } else if let Some(from_uqff) = &*self.from_uqff.read().unwrap() {
+            model.load_from_artifacts(
+                device.clone(),
+                self.config.topology.as_ref(),
+                silent,
+                from_uqff,
+            )?;
+        }
+
+        let paged_attn_config = if matches!(self.kind, ModelKind::Adapter { .. }) {
+            warn!("Adapter models do not currently support PagedAttention, running without");
+            None
+        } else {
+            paged_attn_config
+        };
+
+        let (cache_config, cache_engine) = if let Some(paged_attn_config) = paged_attn_config {
+            let cache_config = calculate_cache_config(
+                paged_attn_config.mem_gpu,
+                paged_attn_config.mem_cpu,
+                paged_attn_config.block_size,
+                dtype,
+                model.config(),
+                device,
+            )?;
+            let cache_engine = CacheEngine::new(model.config(), &cache_config, dtype, device)?;
+            (Some(cache_config), Some(cache_engine))
+        } else {
+            (None, None)
+        };
+
+        let max_seq_len = model.max_seq_len();
+        let tok_trie: Arc<TokTrie> = build_tok_trie(tokenizer.clone()).into();
+        let num_hidden_layers = match model.cache() {
+            EitherCache::Full(full) => full.lock().len(),
+            EitherCache::Normal(normal) => normal.lock().unwrap().0.len(),
+        };
+        let eos = calculate_eos_tokens(&chat_template, gen_conf, &tokenizer);
+        let sliding_window = model.config().sliding_window;
+        let model_metadata = Arc::new(model.config().clone());
+        Ok(NormalTrainer {
+            model,
+            tokenizer: tokenizer.into(),
+            no_kv_cache: self.no_kv_cache,
+            chat_template: Arc::new(chat_template),
+            non_granular_state: self.tgt_non_granular_index.map(|tgt_non_granular_index| {
+                NonGranularState {
+                    non_granular_index: Arc::new(Mutex::new(0)),
+                    tgt_non_granular_index,
+                }
+            }),
+            model_id: self.model_id.clone(),
+            metadata: Arc::new(GeneralMetadata {
+                max_seq_len,
+                tok_trie: Some(tok_trie),
+                has_no_kv_cache: self.no_kv_cache,
+                num_hidden_layers,
+                eos_tok: eos,
+                kind: self.kind.clone(),
+                is_xlora,
+                activation_dtype: dtype,
+                sliding_window,
+                cache_config,
+                cache_engine,
+                prompt_batchsize: self.config.prompt_batchsize,
+                model_metadata: Some(model_metadata),
+            }),
+            topology: self.config.topology.clone(),
+            silent,
+            organization: self.config.organization,
+            template_filename: paths.get_template_filename().clone(),
+            generation_config: paths.get_gen_conf_filename().cloned(),
+            config,
+        })
     }
 }
 
