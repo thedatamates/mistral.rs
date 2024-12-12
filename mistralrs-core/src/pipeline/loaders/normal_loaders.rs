@@ -560,7 +560,7 @@ fn default_rope() -> f32 {
 }
 
 impl LlamaBasicConfig {
-    fn deserialize(slice: &str, use_flash_attn: bool) -> Result<models::llama::Config> {
+    pub fn deserialize(slice: &str, use_flash_attn: bool) -> Result<models::llama::Config> {
         let basic_config: Self = serde_json::from_str(slice)?;
         Ok(models::llama::Config {
             hidden_size: basic_config.hidden_size,
