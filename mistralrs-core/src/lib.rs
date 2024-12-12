@@ -106,6 +106,7 @@ pub use utils::debug::initialize_logging;
 pub use utils::memory_usage::MemoryUsage;
 pub use utils::normal::{ModelDType, TryIntoDType};
 pub use utils::paged_attn_supported;
+pub use xlora_models::XLoraLlama;
 
 /// `true` if `MISTRALRS_DEBUG=1`
 pub(crate) static DEBUG: AtomicBool = AtomicBool::new(false);
