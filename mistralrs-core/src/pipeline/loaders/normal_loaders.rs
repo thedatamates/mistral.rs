@@ -538,7 +538,7 @@ impl IsqModelLoader for GemmaLoader {
 // ======================== Llama loader
 
 #[derive(Deserialize)]
-struct LlamaBasicConfig {
+pub struct LlamaBasicConfig {
     hidden_size: usize,
     intermediate_size: usize,
     vocab_size: usize,

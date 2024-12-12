@@ -80,11 +80,11 @@ pub use pipeline::{
     DiffusionSpecificConfig, ForwardInputsResult, GGMLLoader, GGMLLoaderBuilder,
     GGMLSpecificConfig, GGUFLoader, GGUFLoaderBuilder, GGUFSpecificConfig, GemmaLoader,
     Idefics2Loader, InputProcessorOutput, IsqOrganization, LLaVALoader, LLaVANextLoader,
-    LlamaLoader, Loader, LocalModelPaths, MistralLoader, MixtralLoader, ModelKind, ModelPaths,
-    NormalLoader, NormalLoaderBuilder, NormalLoaderType, NormalSpecificConfig, Phi2Loader,
-    Phi3Loader, Phi3VLoader, Qwen2Loader, SpeculativeConfig, SpeculativeLoader,
-    SpeculativePipeline, Starcoder2Loader, TokenSource, VisionLoader, VisionLoaderBuilder,
-    VisionLoaderType, VisionPromptPrefixer, VisionSpecificConfig,
+    LlamaBasicConfig, LlamaLoader, Loader, LocalModelPaths, MistralLoader, MixtralLoader,
+    ModelKind, ModelPaths, NormalLoader, NormalLoaderBuilder, NormalLoaderType,
+    NormalSpecificConfig, Phi2Loader, Phi3Loader, Phi3VLoader, Qwen2Loader, SpeculativeConfig,
+    SpeculativeLoader, SpeculativePipeline, Starcoder2Loader, TokenSource, VisionLoader,
+    VisionLoaderBuilder, VisionLoaderType, VisionPromptPrefixer, VisionSpecificConfig,
 };
 pub use request::{
     Constraint, DetokenizationRequest, ImageGenerationResponseFormat, MessageContent,
