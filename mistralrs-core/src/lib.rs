@@ -4,7 +4,7 @@ use candle_core::Device;
 use cublaslt::setup_cublas_lt_wrapper;
 use engine::Engine;
 pub use engine::{EngineInstruction, ENGINE_INSTRUCTIONS, TERMINATE_ALL_NEXT_STEP};
-pub use lora::Ordering;
+pub use lora::{LoraConfig, Ordering};
 pub use pipeline::ModelCategory;
 pub use pipeline::Pipeline;
 #[cfg(feature = "pyo3_macros")]
