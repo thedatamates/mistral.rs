@@ -21,7 +21,7 @@ use candle_core::{DType, Device, Result, Tensor};
 pub(crate) use config::XLoraConfig;
 pub(crate) use gemma::XLoraModel as XLoraGemma;
 pub(crate) use gemma2::Model as XLoraGemma2;
-pub(crate) use llama::XLoraLlama;
+pub use llama::XLoraLlama;
 pub(crate) use mistral::XLoraModel as XLoraMistral;
 pub(crate) use mixtral::XLoraModel as XLoraMixtral;
 pub(crate) use phi2::Model as XLoraPhi2;
