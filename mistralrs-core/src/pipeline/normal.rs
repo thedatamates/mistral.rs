@@ -51,7 +51,7 @@ use tokio::sync::Mutex;
 use tracing::{info, warn};
 
 pub struct NormalPipeline {
-    model: Box<dyn NormalModel + Send + Sync>,
+    pub model: Box<dyn NormalModel + Send + Sync>,
     tokenizer: Arc<Tokenizer>,
     no_kv_cache: bool,
     chat_template: Arc<ChatTemplate>,
