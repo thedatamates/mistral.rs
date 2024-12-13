@@ -63,7 +63,8 @@ pub use self::cache_manager::{
     Cache, CacheManager, EitherCache, KvCache, LayerCaches, NormalCache,
 };
 pub use self::inputs_processor::{
-    text_models_inputs_processor, InputsProcessor, InputsProcessorType,
+    text_models_inputs_processor, text_models_inputs_processor::FlashParams, InputsProcessor,
+    InputsProcessorType,
 };
 use self::text_models_inputs_processor::PagedAttentionMeta;
 

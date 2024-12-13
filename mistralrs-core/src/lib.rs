@@ -77,7 +77,7 @@ pub use paged_attention::{MemoryGpuConfig, PagedAttentionConfig};
 pub use pipeline::{
     chat_template::ChatTemplate, parse_isq_value, AnyMoeLoader, AnyMoePipeline,
     DiffusionGenerationParams, DiffusionLoader, DiffusionLoaderBuilder, DiffusionLoaderType,
-    DiffusionSpecificConfig, ForwardInputsResult, GGMLLoader, GGMLLoaderBuilder,
+    DiffusionSpecificConfig, FlashParams, ForwardInputsResult, GGMLLoader, GGMLLoaderBuilder,
     GGMLSpecificConfig, GGUFLoader, GGUFLoaderBuilder, GGUFSpecificConfig, GemmaLoader,
     Idefics2Loader, InputProcessorOutput, IsqOrganization, LLaVALoader, LLaVANextLoader,
     LlamaBasicConfig, LlamaLoader, Loader, LocalModelPaths, MistralLoader, MixtralLoader,
