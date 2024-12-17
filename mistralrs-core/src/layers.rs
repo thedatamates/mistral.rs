@@ -68,7 +68,7 @@ impl RmsNorm {
 
 impl Module for RmsNorm {
     fn forward(&self, x: &Tensor) -> Result<Tensor> {
-        candle_nn::ops::rms_norm(&x.contiguous()?, &self.weight, self.eps as f32)
+        candle_nn::ops::rms_norm_slow(&x.contiguous()?, &self.weight, self.eps as f32)
     }
 }
 
