@@ -8,9 +8,7 @@ members = [
     "mistralrs-vision",
     "mistralrs-quant",
 ]
-exclude = [
-    "mistralrs-paged_attn",
-]
+exclude = ["mistralrs-paged_attn"]
 resolver = "2"
 
 [workspace.package]
@@ -25,8 +23,8 @@ license = "MIT"
 
 [workspace.dependencies]
 anyhow = "1.0.80"
-candle-core = { git = "https://github.com/EricLBuehler/candle.git", version = "0.8.0", rev = "8742354" }
-candle-nn = { git = "https://github.com/EricLBuehler/candle.git", version = "0.8.0", rev = "8742354" }
+candle-core = { git = "https://github.com/thedatamates/candle.git", branch = "v0.8.0", rev = "2c9f04c45ec6c010aa8e72dc82c06bb337b83c17" }
+candle-nn = { git = "https://github.com/thedatamates/candle.git", branch = "v0.8.0", rev = "2c9f04c45ec6c010aa8e72dc82c06bb337b83c17" }
 serde = "1.0.197"
 serde_json = "1.0.114"
 indexmap = { version = "2.2.5", features = ["serde"] }
@@ -41,7 +39,22 @@ pyo3 = { version = "0.22.4", features = ["full", "extension-module", "either"] }
 tokio = { version = "1.36.0", features = ["full", "rt-multi-thread"] }
 once_cell = "1.19.0"
 # All features but avif, avif increases the msrv dramatically
-image = { version = "0.25.1", default-features = false, features = ['bmp', 'dds', 'exr', 'ff', 'gif', 'hdr', 'ico', 'jpeg', 'png', 'pnm', 'qoi', 'tga', 'tiff', 'webp']}
+image = { version = "0.25.1", default-features = false, features = [
+    'bmp',
+    'dds',
+    'exr',
+    'ff',
+    'gif',
+    'hdr',
+    'ico',
+    'jpeg',
+    'png',
+    'pnm',
+    'qoi',
+    'tga',
+    'tiff',
+    'webp',
+] }
 reqwest = { version = "0.12.4", features = ["blocking"] }
 base64 = "0.22.1"
 half = "2.4.0"
