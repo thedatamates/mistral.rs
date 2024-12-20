@@ -447,7 +447,7 @@ impl XLoraLlama {
         flash_params: &FlashParams,
     ) -> Result<Tensor> {
         let mut x = self.wte.forward(input_ids)?;
-        println!("wte forward x op is none: {:?}", x.op().is_none());
+        println!("wte forward x op is some: {:?}", x.op().is_some());
         let mut cache = if is_full_pass {
             if no_kv_cache {
                 let mut new_cache = Vec::new();
@@ -485,7 +485,7 @@ impl XLoraLlama {
                 flash_params,
             )?;
         }
-        println!("block forward x op is none: {:?}", x.op().is_none());
+        println!("block forward x op is some: {:?}", x.op().is_some());
 
         let x = x.to_device(&self.device)?;
         self.ln_f.forward(&x)
@@ -579,7 +579,7 @@ impl XLoraLlama {
             if let Some(t) = self.lm_head.quantized_act_type() {
                 res = res.to_dtype(t)?;
             }
-            println!("wte forward res op is none: {:?}", res.op().is_none());
+            println!("ln_f forward res op is some: {:?}", res.op().is_some());
 
             extract_logits(
                 &self.lm_head.lora_forward(&res, None, 1.0, None)?,
