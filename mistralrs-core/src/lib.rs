@@ -82,9 +82,9 @@ pub use pipeline::{
     Idefics2Loader, InputProcessorOutput, IsqOrganization, LLaVALoader, LLaVANextLoader,
     LlamaBasicConfig, LlamaLoader, Loader, LocalModelPaths, MistralLoader, MixtralLoader,
     ModelKind, ModelPaths, NormalLoader, NormalLoaderBuilder, NormalLoaderType,
-    NormalLoadingMetadata, NormalSpecificConfig, Phi2Loader, Phi3Loader, Phi3VLoader, Qwen2Loader,
-    SpeculativeConfig, SpeculativeLoader, SpeculativePipeline, Starcoder2Loader, TokenSource,
-    VisionLoader, VisionLoaderBuilder, VisionLoaderType, VisionPromptPrefixer,
+    NormalLoadingMetadata, NormalModel, NormalSpecificConfig, Phi2Loader, Phi3Loader, Phi3VLoader,
+    Qwen2Loader, SpeculativeConfig, SpeculativeLoader, SpeculativePipeline, Starcoder2Loader,
+    TokenSource, VisionLoader, VisionLoaderBuilder, VisionLoaderType, VisionPromptPrefixer,
     VisionSpecificConfig,
 };
 pub use request::{
