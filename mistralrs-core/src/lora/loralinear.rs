@@ -223,6 +223,8 @@ impl LinearLayerLike for LoraLinear {
             return Ok(result);
         }
 
+        println!("actually perform lora forward: {:?}", input.id());
+
         let scalings =
             scalings.map(|scalings| get_maybe_topk_scalings(scalings, self.layer_n).unwrap());
         if self.a_adapters.is_left()
