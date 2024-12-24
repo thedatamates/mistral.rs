@@ -206,7 +206,6 @@ pub fn linear(
         .as_ref()
         .is_some_and(|target_modules| target_modules.contains(module))
     {
-        println!("skipping layer: {:?}", prefix);
         return Ok(Arc::new(inner));
     }
     let name = prefix.split("lora_A").last().unwrap();
@@ -215,7 +214,6 @@ pub fn linear(
     } else {
         0
     };
-    println!("lora layer init: {:?}", prefix);
 
     let lorainner = LoraLinear::new(
         &inner,
@@ -260,6 +258,7 @@ pub fn linear_no_bias(
         .as_ref()
         .is_some_and(|target_modules| target_modules.contains(module))
     {
+        println!("skipping layer: {:?}", prefix);
         return Ok(Arc::new(inner));
     }
     let name = prefix.split("lora_A").last().unwrap();
@@ -268,6 +267,7 @@ pub fn linear_no_bias(
     } else {
         0
     };
+    println!("lora layer init: {:?}", prefix);
 
     let lorainner = LoraLinear::new(
         &inner,
