@@ -40,31 +40,32 @@ impl LoraLinear {
         for ((name_id, adapter_name), cfg) in config.iter() {
             let a_pp = a_vb.pp(name_id);
             let b_pp = b_vb.pp(name_id);
-            let adapter = make_adapter(a_pp, b_pp, cfg, linear_config)?;
-            a_adapters.push(adapter.a.clone());
-            b_adapters.push(adapter.b.clone());
-            scale_adapters.push(adapter.scale);
-            if state.is_some_and(|x| {
-                x == (
-                    cfg.rank,
-                    linear_config.in_features,
-                    linear_config.out_features,
-                    cfg.alpha,
-                    cfg.dropout,
-                )
-            }) || state.is_none()
-            {
-                state = Some((
-                    cfg.rank,
-                    linear_config.in_features,
-                    linear_config.out_features,
-                    cfg.alpha,
-                    cfg.dropout,
-                ));
-            } else {
-                all_same = false;
+            if let Ok(adapter) = make_adapter(a_pp, b_pp, cfg, linear_config) {
+                a_adapters.push(adapter.a.clone());
+                b_adapters.push(adapter.b.clone());
+                scale_adapters.push(adapter.scale);
+                if state.is_some_and(|x| {
+                    x == (
+                        cfg.rank,
+                        linear_config.in_features,
+                        linear_config.out_features,
+                        cfg.alpha,
+                        cfg.dropout,
+                    )
+                }) || state.is_none()
+                {
+                    state = Some((
+                        cfg.rank,
+                        linear_config.in_features,
+                        linear_config.out_features,
+                        cfg.alpha,
+                        cfg.dropout,
+                    ));
+                } else {
+                    all_same = false;
+                }
+                adapters.insert(adapter_name.clone(), adapter);
             }
-            adapters.insert(adapter_name.clone(), adapter);
         }
 
         if let Some(preload_adapters) = preload_adapters {
