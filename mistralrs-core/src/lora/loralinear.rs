@@ -217,16 +217,12 @@ impl LinearLayerLike for LoraLinear {
         let mut result = self.old.forward(input)?;
 
         if self.merged {
-            println!("merged lora forward: {:?}", input.id());
             return Ok(result);
         }
 
         if is_scaling_pass.is_some_and(|x| x == 0.) {
-            println!("scaling pass lora forward: {:?}", input.id());
             return Ok(result);
         }
-
-        println!("actually perform lora forward: {:?}", input.id());
 
         let scalings =
             scalings.map(|scalings| get_maybe_topk_scalings(scalings, self.layer_n).unwrap());
