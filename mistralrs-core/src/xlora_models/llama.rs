@@ -615,11 +615,16 @@ impl XLoraLlama {
             cfg.hidden_size,
             mapper.set_nm_device(vb.pp("model.embed_tokens"), false),
         )?;
+        let lm_head_vb = if cfg.tie_word_embeddings {
+            "model.embed_tokens"
+        } else {
+            "lm_head"
+        };
         let lm_head = linear(
             cfg.hidden_size,
             cfg.vocab_size,
-            mapper.set_nm_device(vb.pp("lm_head"), normal_loading_metadata.loading_isq),
-            mapper.set_nm_device(vb.pp("lm_head"), false),
+            mapper.set_nm_device(vb.pp(lm_head_vb), normal_loading_metadata.loading_isq),
+            mapper.set_nm_device(vb.pp(lm_head_vb), false),
             lora_config,
             &mut count,
             &xlora_ordering,
