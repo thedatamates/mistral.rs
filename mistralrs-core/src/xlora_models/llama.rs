@@ -459,6 +459,14 @@ impl XLoraLlama {
             }
             self.kv_cache.full().xlora_lock()
         } else {
+            if no_kv_cache {
+                let mut new_cache = Vec::new();
+                for _ in 0..self.kv_cache.full().lock().len() {
+                    new_cache.push(None);
+                }
+
+                self.kv_cache.full().lock().clone_from(&new_cache);
+            }
             self.kv_cache.full().lock()
         };
         let mask = CausalMasker.make_causal_mask_matrix(
