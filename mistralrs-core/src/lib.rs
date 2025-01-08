@@ -4,7 +4,7 @@ use candle_core::Device;
 use cublaslt::setup_cublas_lt_wrapper;
 use engine::Engine;
 pub use engine::{EngineInstruction, ENGINE_INSTRUCTIONS, TERMINATE_ALL_NEXT_STEP};
-pub use lora::{LoraConfig, Ordering};
+pub use lora::{linear_no_bias, LinearLayerLike, LoraConfig, Ordering};
 pub use pipeline::ModelCategory;
 pub use pipeline::Pipeline;
 #[cfg(feature = "pyo3_macros")]
@@ -69,23 +69,24 @@ mod vision_models;
 mod xlora_models;
 
 pub use amoe::{AnyMoeConfig, AnyMoeExpertType};
-pub use device_map::{DeviceLayerMapMetadata, DeviceMapMetadata, LayerDeviceMapper};
+pub use attention::SdpaParams;
+pub use device_map::{DeviceLayerMapMetadata, DeviceMapMetadata, DeviceMapper, LayerDeviceMapper};
 pub use gguf::{GGUFArchitecture, GGUF_MULTI_FILE_DELIMITER};
 pub use mistralrs_quant::IsqType;
 pub use models::llama::Config;
-pub use paged_attention::{MemoryGpuConfig, PagedAttentionConfig};
+pub use paged_attention::{MemoryGpuConfig, ModelConfigMetadata, PagedAttentionConfig};
 pub use pipeline::{
-    chat_template::ChatTemplate, parse_isq_value, AnyMoeLoader, AnyMoePipeline,
+    chat_template::ChatTemplate, parse_isq_value, AnyMoeLoader, AnyMoePipeline, Cache,
     DiffusionGenerationParams, DiffusionLoader, DiffusionLoaderBuilder, DiffusionLoaderType,
-    DiffusionSpecificConfig, FlashParams, ForwardInputsResult, GGMLLoader, GGMLLoaderBuilder,
-    GGMLSpecificConfig, GGUFLoader, GGUFLoaderBuilder, GGUFSpecificConfig, GemmaLoader,
-    Idefics2Loader, InputProcessorOutput, IsqOrganization, LLaVALoader, LLaVANextLoader,
-    LlamaBasicConfig, LlamaLoader, Loader, LocalModelPaths, MistralLoader, MixtralLoader,
-    ModelKind, ModelPaths, NormalLoader, NormalLoaderBuilder, NormalLoaderType,
-    NormalLoadingMetadata, NormalModel, NormalSpecificConfig, Phi2Loader, Phi3Loader, Phi3VLoader,
-    Qwen2Loader, SpeculativeConfig, SpeculativeLoader, SpeculativePipeline, Starcoder2Loader,
-    TokenSource, VisionLoader, VisionLoaderBuilder, VisionLoaderType, VisionPromptPrefixer,
-    VisionSpecificConfig,
+    DiffusionSpecificConfig, EitherCache, FlashParams, ForwardInputsResult, GGMLLoader,
+    GGMLLoaderBuilder, GGMLSpecificConfig, GGUFLoader, GGUFLoaderBuilder, GGUFSpecificConfig,
+    GemmaLoader, Idefics2Loader, InputProcessorOutput, IsqOrganization, LLaVALoader,
+    LLaVANextLoader, LayerCaches, LlamaBasicConfig, LlamaLoader, Loader, LocalModelPaths,
+    MistralLoader, MixtralLoader, ModelKind, ModelPaths, NormalLoader, NormalLoaderBuilder,
+    NormalLoaderType, NormalLoadingMetadata, NormalModel, NormalSpecificConfig, Phi2Loader,
+    Phi3Loader, Phi3VLoader, Qwen2Loader, SpeculativeConfig, SpeculativeLoader,
+    SpeculativePipeline, Starcoder2Loader, TokenSource, VisionLoader, VisionLoaderBuilder,
+    VisionLoaderType, VisionPromptPrefixer, VisionSpecificConfig,
 };
 pub use request::{
     Constraint, DetokenizationRequest, ImageGenerationResponseFormat, MessageContent,
@@ -108,6 +109,7 @@ pub use utils::debug::initialize_logging;
 pub use utils::memory_usage::MemoryUsage;
 pub use utils::normal::{ModelDType, TryIntoDType};
 pub use utils::paged_attn_supported;
+pub use utils::progress::NiceProgressBar;
 pub use xlora_models::XLoraLlama;
 
 /// `true` if `MISTRALRS_DEBUG=1`
