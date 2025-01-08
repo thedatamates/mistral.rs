@@ -445,7 +445,7 @@ pub struct Cache {
 }
 
 impl Cache {
-    pub(crate) fn new(len: usize, is_xlora: bool) -> Self {
+    pub fn new(len: usize, is_xlora: bool) -> Self {
         Self {
             cache: Arc::new(Mutex::new(vec![None; len])),
             xlora_cache: if is_xlora {
@@ -462,7 +462,7 @@ impl Cache {
         }
     }
 
-    pub(crate) fn lock(&self) -> MutexGuard<'_, LayerCaches> {
+    pub fn lock(&self) -> MutexGuard<'_, LayerCaches> {
         get_mut_arcmutex!(self.cache)
     }
 
@@ -490,7 +490,7 @@ impl Cache {
     }
 
     /// Update the KV cache and return (k,v)
-    pub(crate) fn update_kv_cache(
+    pub fn update_kv_cache(
         cache: &mut Option<(Tensor, Tensor)>,
         k: Tensor,
         v: Tensor,
