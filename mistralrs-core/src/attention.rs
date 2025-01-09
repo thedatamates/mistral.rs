@@ -189,6 +189,7 @@ fn naive_sdpa(
     }
 }
 
+#[derive(Debug, Clone, Copy)]
 pub struct SdpaParams {
     pub n_kv_groups: usize,
     pub use_flash_attn: bool,
